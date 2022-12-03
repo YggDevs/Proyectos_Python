@@ -1,6 +1,6 @@
 import cv2
 # path ese necesario especificar un path si no da error
-path = r'C:\Proyectos_Python\MonedasContorno\contorno.jpg'
+path = r'C:\Proyectos_Python\Python_Contorno\contorno.jpg'
 # Reading an image in default mode
 image = cv2.imread(path)
 
