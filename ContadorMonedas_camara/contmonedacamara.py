@@ -32,7 +32,7 @@ def alineamiento(imagen,ancho,alto):
             imagen_alineada=cv2.warpPerspective(imagen, M, (ancho,alto))
     return imagen_alineada
 #captura de video 1 para camara externa 0 para camara interna 
-capturavideo= cv2.VideoCapture(0)
+capturavideo= cv2.VideoCapture(1)
 
 while True:
     tipocamara,camara=capturavideo.read()
@@ -60,21 +60,22 @@ while True:
                 Momentos["m00"]=1.0
             x=int(Momentos["m10"]/Momentos["m00"])
             y=int(Momentos["m01"]/Momentos["m00"])
-#Aqui validamos la moneda basandonos en su area
+#Aqui validamos la moneda basandonos en su area pasando el area a pixels
             if area<9300 and area>8000:
                 font=cv2.FONT_HERSHEY_SIMPLEX
-                cv2.putText(imagen_A6, "S/. 0.20",(x,y) , font, 0.75, (0,255,0),2)
+                cv2.putText(imagen_A6, "Moneda de. 0.20",(x,y) , font, 0.75, (0,255,0),2)
                 suma1=suma1+0.2
             
             if area<7800 and area>6500:
                 font=cv2.FONT_HERSHEY_SIMPLEX
-                cv2.putText(imagen_A6, "S/. 0.10",(x,y) , font, 0.75, (0,255,0),2)
+                cv2.putText(imagen_A6, "Moneda de. 0.10",(x,y) , font, 0.75, (0,255,0),2)
                 suma2=suma2+0.1
+#mostramos los datos
         total=suma1+suma2
-        print("Sumatoria total en Centimos:",round(total,2))
+        print("El todal es de  :",round(total,2))
         cv2.imshow("Imagen A6", imagen_A6)
         cv2.imshow("camara", camara)
-    if cv2.waitKey(1) == ord('s'):
+    if cv2.waitKey(1) == ord('q'):
         break
 capturavideo.release()
 cv2.destroyAllWindows()
