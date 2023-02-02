@@ -2,8 +2,9 @@ import cv2
 import os
 import imutils
 
-personName = 'Yeray'
-dataPath = 'C:\Proyectos_Python\Identificando_caras__'#Cambia a la ruta donde hayas almacenado Data
+personName = 'Nombre_persona'
+#Cambia a la ruta donde hayas almacenado Data
+dataPath = 'C:/Proyectos_Python/Identificando_caras'
 personPath = dataPath + '/' + personName
 
 if not os.path.exists(personPath):

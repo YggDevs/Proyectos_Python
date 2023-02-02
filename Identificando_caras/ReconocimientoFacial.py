@@ -1,20 +1,20 @@
 import cv2
 import os
 
-dataPath = 'C:\Proyectos_Python\Identificando_caras__' #Cambia a la ruta donde hayas almacenado Data
+dataPath = 'C:/Proyectos_Python/Identificando_caras/Data' #Cambia a la ruta donde hayas almacenado Data
 imagePaths = os.listdir(dataPath)
 print('imagePaths=',imagePaths)
 
 #face_recognizer = cv2.face.EigenFaceRecognizer_create()
 #face_recognizer = cv2.face.FisherFaceRecognizer_create()
-#face_recognizer = cv2.face.LBPHFaceRecognizer_create()
+face_recognizer = cv2.face.LBPHFaceRecognizer_create()
 
 # Leyendo el modelo
 #face_recognizer.read('modeloEigenFace.xml')
 #face_recognizer.read('modeloFisherFace.xml')
-#face_recognizer.read('modeloLBPHFace.xml')
+face_recognizer.read('modeloLBPHFace.xml')
 
-#cap = cv2.VideoCapture(0,cv2.CAP_DSHOW)
+cap = cv2.VideoCapture(0,cv2.CAP_DSHOW)
 #cap = cv2.VideoCapture('Video.mp4')
 
 faceClassif = cv2.CascadeClassifier(cv2.data.haarcascades+'haarcascade_frontalface_default.xml')
@@ -49,7 +49,7 @@ while True:
         else:
             cv2.putText(frame,'Desconocido',(x,y-20),2,0.8,(0,0,255),1,cv2.LINE_AA)
             cv2.rectangle(frame, (x,y),(x+w,y+h),(0,0,255),2)
-        
+        '''
         # LBPHFace
         if result[1] < 70:
             cv2.putText(frame,'{}'.format(imagePaths[result[0]]),(x,y-25),2,1.1,(0,255,0),1,cv2.LINE_AA)
@@ -57,11 +57,11 @@ while True:
         else:
             cv2.putText(frame,'Desconocido',(x,y-20),2,0.8,(0,0,255),1,cv2.LINE_AA)
             cv2.rectangle(frame, (x,y),(x+w,y+h),(0,0,255),2)
-        '''
+        
     cv2.imshow('frame',frame)
     k = cv2.waitKey(1)
-    if k == 27:
+    if k == ord('q'):
         break
 
-    cap.release()
+cap.release()
 cv2.destroyAllWindows()
