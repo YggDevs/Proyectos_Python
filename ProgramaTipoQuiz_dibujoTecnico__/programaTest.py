@@ -1,3 +1,7 @@
+import random
+import tkinter as tk
+from tkinter import messagebox
+
 # Función que devuelve las preguntas y las opciones
 def obtener_preguntas():
     preguntas = [
@@ -56,133 +60,92 @@ def obtener_preguntas():
                          "c) Deben estar a una distancia mínima de 8 mm del dibujo", 
                          "d) Se pueden dibujar en líneas ocultas"],
             "respuesta_correcta": "c"
-        },
-        {
-            "pregunta": "¿Cuál es la función principal de las líneas auxiliares en un croquis?",
-            "opciones": ["a) Delimitar los objetos dibujados", "b) Indicar cotas de las medidas", "c) Servir como guía para trazar líneas principales", "d) Definir el eje central de simetría"],
-            "respuesta_correcta": "c"
-        },
-        {
-            "pregunta": "¿Qué tipo de línea se utiliza en los dibujos técnicos para representar un objeto oculto?",
-            "opciones": ["a) Línea continua gruesa", "b) Línea discontinua fina", "c) Línea de trazo y punto", "d) Línea continua delgada"],
-            "respuesta_correcta": "b"
-        },
-        {
-            "pregunta": "¿Qué símbolo se usa para indicar el radio en un proceso de acotación?",
-            "opciones": ["a) □", "b) Φ", "c) R", "d) SR"],
-            "respuesta_correcta": "c"
-        },
-        {
-            "pregunta": "Según la norma ISO 128, ¿qué características debe tener una línea continua gruesa en un dibujo técnico?",
-            "opciones": ["a) Representar los contornos visibles de un objeto", 
-                         "b) Mostrar las partes ocultas de un objeto", 
-                         "c) Indicar los ejes de simetría", 
-                         "d) Representar las líneas de cota"],
-            "respuesta_correcta": "a"
-        },
-        {
-            "pregunta": "¿Qué normativa regula el uso de la escritura en los planos técnicos para asegurar legibilidad y uniformidad?",
-            "opciones": ["a) UNE 1026", "b) UNE 1039", "c) ISO 5457", "d) UNE 1034"],
-            "respuesta_correcta": "d"
-        },
-        {
-            "pregunta": "¿Cuál de los siguientes esquemas es ideal para la representación de conexiones eléctricas simples?",
-            "opciones": ["a) Esquema multifilar", "b) Esquema de bloques", "c) Esquema unifilar", "d) Plano de detalle"],
-            "respuesta_correcta": "c"
-        },
-        {
-            "pregunta": "¿Qué tipo de plano es necesario para indicar la ubicación exacta de las luminarias, interruptores y tomas de corriente en un proyecto eléctrico?",
-            "opciones": ["a) Plano de zonificación", "b) Plano de trazado", "c) Plano de planta de la instalación eléctrica", "d) Plano topográfico"],
-            "respuesta_correcta": "c"
-        },
-        {
-            "pregunta": "¿Qué tipo de plano se utiliza para indicar las características físicas del terreno en un proyecto de obra civil?",
-            "opciones": ["a) Plano de situación general", "b) Plano de estructura", "c) Plano topográfico", "d) Plano de zonificación"],
-            "respuesta_correcta": "c"
-        },
-        {
-            "pregunta": "¿Qué información se incluye en un plano de cimentación en un proyecto de edificación?",
-            "opciones": ["a) La ubicación de luminarias e interruptores", 
-                         "b) El recorrido de las canalizaciones eléctricas", 
-                         "c) Las bases de sustentación, como zapatas y pilares", 
-                         "d) La ubicación de las vías de evacuación"],
-            "respuesta_correcta": "c"
-        },
-        {
-            "pregunta": "¿Cuál es la función principal de una línea de referencia en un proceso de acotación?",
-            "opciones": ["a) Indicar el diámetro de una pieza", 
-                         "b) Conectar una nota explicativa con el objeto", 
-                         "c) Marcar el eje de simetría", 
-                         "d) Señalar las dimensiones no funcionales"],
-            "respuesta_correcta": "b"
-        },
-        {
-            "pregunta": "¿Qué tipo de cota es imprescindible para el correcto funcionamiento de una pieza?",
-            "opciones": ["a) Cota funcional", "b) Cota auxiliar", "c) Cota no funcional", "d) Cota de situación"],
-            "respuesta_correcta": "a"
         }
     ]
     return preguntas
 
-# Función para corregir las respuestas
-def corregir_examen(respuestas_usuario, preguntas):
-    puntuacion = 0
-    respuestas_incorrectas = []
+# Lógica de la aplicación
+class TestApp:
+    def __init__(self, root, preguntas, num_preguntas):
+        self.root = root
+        self.root.title("Test de Dibujo Técnico")
+        self.preguntas = random.sample(preguntas, num_preguntas)
+        self.respuestas_usuario = {}
+        self.pregunta_actual = 0
+        self.preguntas_falladas = []
+        self.reintentando = False
+        self.crear_widgets()
 
-    for i in range(len(preguntas)):
-        if respuestas_usuario[i].lower() == preguntas[i]["respuesta_correcta"]:
-            puntuacion += 1
+    def crear_widgets(self):
+        self.pregunta_label = tk.Label(self.root, text="", wraplength=400)
+        self.pregunta_label.pack(pady=10)
+
+        self.opciones_var = tk.StringVar(value="")  # Ninguna opción seleccionada por defecto
+        self.opciones_radio = []
+        for i in range(4):
+            rb = tk.Radiobutton(self.root, text="", variable=self.opciones_var, value="")
+            rb.pack(anchor="w")
+            self.opciones_radio.append(rb)
+
+        self.boton_siguiente = tk.Button(self.root, text="Siguiente", command=self.siguiente_pregunta)
+        self.boton_siguiente.pack(pady=10)
+
+        self.mostrar_pregunta()
+
+    def mostrar_pregunta(self):
+        pregunta = self.preguntas[self.pregunta_actual]
+        self.pregunta_label.config(text=pregunta["pregunta"])
+
+        for i, opcion in enumerate(pregunta["opciones"]):
+            self.opciones_radio[i].config(text=opcion, value=opcion)
+
+        self.opciones_var.set("")  # Reiniciar la selección para cada pregunta
+
+    def siguiente_pregunta(self):
+        respuesta_seleccionada = self.opciones_var.get()
+        if respuesta_seleccionada == "":
+            messagebox.showwarning("Advertencia", "Por favor, selecciona una opción.")
+            return
+
+        pregunta = self.preguntas[self.pregunta_actual]
+        correcta = respuesta_seleccionada == pregunta["respuesta_correcta"]
+        self.respuestas_usuario[self.pregunta_actual] = correcta
+
+        if not correcta and not self.reintentando:
+            self.preguntas_falladas.append(pregunta)
+
+        self.pregunta_actual += 1
+
+        if self.pregunta_actual < len(self.preguntas):
+            self.mostrar_pregunta()
         else:
-            respuestas_incorrectas.append(i)
+            if self.reintentando:
+                self.mostrar_resultados_finales()
+            else:
+                self.mostrar_resultados_falladas()
 
-    return puntuacion, respuestas_incorrectas
+    def mostrar_resultados_falladas(self):
+        if self.preguntas_falladas:
+            messagebox.showinfo("Resultados", f"Has fallado {len(self.preguntas_falladas)} preguntas. Vamos a intentarlas de nuevo.")
+            self.preguntas = self.preguntas_falladas
+            self.preguntas_falladas = []
+            self.pregunta_actual = 0
+            self.reintentando = True
+            self.mostrar_pregunta()
+        else:
+            self.mostrar_resultados_finales()
 
-# Función para permitir al usuario volver a responder preguntas incorrectas
-def repetir_incorrectas(preguntas, respuestas_incorrectas):
-    nuevas_respuestas = []
-    for i in respuestas_incorrectas:
-        print(f"Pregunta {i + 1}: {preguntas[i]['pregunta']}")
-        for opcion in preguntas[i]["opciones"]:
-            print(opcion)
-        respuesta = input("Escribe tu respuesta (a, b, c, o d): ")
-        nuevas_respuestas.append(respuesta)
-    return nuevas_respuestas
+    def mostrar_resultados_finales(self):
+        correctas = sum(self.respuestas_usuario.values())
+        total = len(self.respuestas_usuario)
+        messagebox.showinfo("Resultados", f"Has respondido correctamente {correctas} de {total} preguntas.")
+        self.root.quit()
 
-# Función principal para ejecutar el test
-def realizar_test():
+# Configuración inicial
+if __name__ == "__main__":
+    root = tk.Tk()
     preguntas = obtener_preguntas()
-    respuestas_usuario = []
+    app = TestApp(root, preguntas, num_preguntas=5)  # Puedes cambiar el número de preguntas aquí
+    root.mainloop()
 
-    print("Examen tipo test sobre técnicas de dibujo, croquizado, proporciones y escalas, tipos de esquemas y cotas.\n")
-
-    for i, pregunta in enumerate(preguntas):
-        print(f"Pregunta {i + 1}: {pregunta['pregunta']}")
-        for opcion in pregunta["opciones"]:
-            print(opcion)
-        
-        respuesta = input("Escribe tu respuesta (a, b, c, o d): ")
-        respuestas_usuario.append(respuesta)
-
-    puntuacion, respuestas_incorrectas = corregir_examen(respuestas_usuario, preguntas)
-    print(f"\nPuntuación obtenida: {puntuacion}/{len(preguntas)}")
-
-    if respuestas_incorrectas:
-        print(f"\nHas fallado en {len(respuestas_incorrectas)} pregunta(s).")
-        repetir = input("¿Quieres intentar responderlas nuevamente? (s/n): ")
-        if repetir.lower() == 's':
-            nuevas_respuestas = repetir_incorrectas(preguntas, respuestas_incorrectas)
-            for idx, nueva_respuesta in enumerate(nuevas_respuestas):
-                if nueva_respuesta.lower() == preguntas[respuestas_incorrectas[idx]]["respuesta_correcta"]:
-                    puntuacion += 1
-
-    print(f"\nPuntuación final: {puntuacion}/{len(preguntas)}")
-    if puntuacion == len(preguntas):
-        print("¡Felicidades! Has obtenido la puntuación máxima.")
-    elif puntuacion >= 16:
-        print("¡Buen trabajo! Aprobaste el test.")
-    else:
-        print("No alcanzaste la puntuación mínima. Inténtalo nuevamente.")
-
-# Ejecutar el test
-realizar_test()
 
