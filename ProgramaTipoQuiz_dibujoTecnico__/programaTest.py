@@ -1,6 +1,6 @@
 import random
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import simpledialog, messagebox
 
 # Función que devuelve las preguntas y las opciones
 def obtener_preguntas():
@@ -64,88 +64,112 @@ def obtener_preguntas():
     ]
     return preguntas
 
-# Lógica de la aplicación
 class TestApp:
-    def __init__(self, root, preguntas, num_preguntas):
+    def __init__(self, root):
         self.root = root
-        self.root.title("Test de Dibujo Técnico")
-        self.preguntas = random.sample(preguntas, num_preguntas)
+        self.preguntas = obtener_preguntas()
+        self.preguntas_falladas = []
+        self.preguntas_actuales = []
         self.respuestas_usuario = {}
         self.pregunta_actual = 0
-        self.preguntas_falladas = []
         self.reintentando = False
-        self.crear_widgets()
 
-    def crear_widgets(self):
-        self.pregunta_label = tk.Label(self.root, text="", wraplength=400)
-        self.pregunta_label.pack(pady=10)
+        # Pedir al usuario el número de preguntas
+        self.numero_preguntas = simpledialog.askinteger("Número de preguntas", "¿Cuántas preguntas deseas responder?", minvalue=1, maxvalue=len(self.preguntas))
+        if self.numero_preguntas is None:
+            self.root.quit()
 
-        self.opciones_var = tk.StringVar(value="")  # Ninguna opción seleccionada por defecto
-        self.opciones_radio = []
-        for i in range(4):
-            rb = tk.Radiobutton(self.root, text="", variable=self.opciones_var, value="")
-            rb.pack(anchor="w")
-            self.opciones_radio.append(rb)
+        # Seleccionamos las preguntas aleatoriamente
+        self.preguntas_actuales = random.sample(self.preguntas, self.numero_preguntas)
 
-        self.boton_siguiente = tk.Button(self.root, text="Siguiente", command=self.siguiente_pregunta)
-        self.boton_siguiente.pack(pady=10)
+        # Creamos la interfaz gráfica
+        self.label_pregunta = tk.Label(root, text="")
+        self.label_pregunta.pack(pady=20)
+
+        self.var_respuesta = tk.StringVar()
+        self.opcion1 = tk.Radiobutton(root, text="", variable=self.var_respuesta, value="a")
+        self.opcion1.pack(anchor=tk.W)
+
+        self.opcion2 = tk.Radiobutton(root, text="", variable=self.var_respuesta, value="b")
+        self.opcion2.pack(anchor=tk.W)
+
+        self.opcion3 = tk.Radiobutton(root, text="", variable=self.var_respuesta, value="c")
+        self.opcion3.pack(anchor=tk.W)
+
+        self.opcion4 = tk.Radiobutton(root, text="", variable=self.var_respuesta, value="d")
+        self.opcion4.pack(anchor=tk.W)
+
+        self.boton_siguiente = tk.Button(root, text="Siguiente", command=self.comprobar_respuesta)
+        self.boton_siguiente.pack(pady=20)
 
         self.mostrar_pregunta()
 
     def mostrar_pregunta(self):
-        pregunta = self.preguntas[self.pregunta_actual]
-        self.pregunta_label.config(text=pregunta["pregunta"])
+        # Cargar la pregunta actual
+        pregunta = self.preguntas_actuales[self.pregunta_actual]
+        self.label_pregunta.config(text=pregunta["pregunta"])
+        self.opcion1.config(text=pregunta["opciones"][0])
+        self.opcion2.config(text=pregunta["opciones"][1])
+        self.opcion3.config(text=pregunta["opciones"][2])
+        self.opcion4.config(text=pregunta["opciones"][3])
+        self.var_respuesta.set(None)  # Limpiar la selección previa
 
-        for i, opcion in enumerate(pregunta["opciones"]):
-            self.opciones_radio[i].config(text=opcion, value=opcion)
+    def comprobar_respuesta(self):
+        pregunta = self.preguntas_actuales[self.pregunta_actual]
+        respuesta_correcta = pregunta["respuesta_correcta"]
+        respuesta_usuario = self.var_respuesta.get()
 
-        self.opciones_var.set("")  # Reiniciar la selección para cada pregunta
-
-    def siguiente_pregunta(self):
-        respuesta_seleccionada = self.opciones_var.get()
-        if respuesta_seleccionada == "":
-            messagebox.showwarning("Advertencia", "Por favor, selecciona una opción.")
+        # Verificamos si el usuario ha seleccionado una opción
+        if not respuesta_usuario:
+            messagebox.showwarning("Advertencia", "Por favor, selecciona una respuesta.")
             return
 
-        pregunta = self.preguntas[self.pregunta_actual]
-        correcta = respuesta_seleccionada == pregunta["respuesta_correcta"]
-        self.respuestas_usuario[self.pregunta_actual] = correcta
-
-        if not correcta and not self.reintentando:
+        # Comprobación de la respuesta del usuario
+        if respuesta_usuario == respuesta_correcta:
+            self.respuestas_usuario[self.pregunta_actual] = True
+            messagebox.showinfo("Correcto", "¡Respuesta correcta!")
+        else:
+            self.respuestas_usuario[self.pregunta_actual] = False
             self.preguntas_falladas.append(pregunta)
+            messagebox.showinfo("Incorrecto", f"Respuesta incorrecta. La respuesta correcta era: {respuesta_correcta}")
 
+        # Avanzar a la siguiente pregunta
         self.pregunta_actual += 1
 
-        if self.pregunta_actual < len(self.preguntas):
+        if self.pregunta_actual < len(self.preguntas_actuales):
             self.mostrar_pregunta()
         else:
-            if self.reintentando:
-                self.mostrar_resultados_finales()
-            else:
-                self.mostrar_resultados_falladas()
+            self.finalizar_test()
 
-    def mostrar_resultados_falladas(self):
+    def finalizar_test(self):
+        # Al finalizar el test
         if self.preguntas_falladas:
-            messagebox.showinfo("Resultados", f"Has fallado {len(self.preguntas_falladas)} preguntas. Vamos a intentarlas de nuevo.")
-            self.preguntas = self.preguntas_falladas
-            self.preguntas_falladas = []
-            self.pregunta_actual = 0
-            self.reintentando = True
-            self.mostrar_pregunta()
+            reintento = messagebox.askyesno("Reintentar", "Has fallado algunas preguntas. ¿Quieres intentar nuevamente las preguntas falladas?")
+            if reintento:
+                self.reintentar_preguntas()
+            else:
+                self.mostrar_resultados()
         else:
-            self.mostrar_resultados_finales()
+            self.mostrar_resultados()
 
-    def mostrar_resultados_finales(self):
+    def reintentar_preguntas(self):
+        # Reintento de las preguntas falladas
+        self.preguntas_actuales = self.preguntas_falladas
+        self.preguntas_falladas = []
+        self.pregunta_actual = 0
+        self.reintentando = True
+        self.mostrar_pregunta()
+
+    def mostrar_resultados(self):
+        # Mostrar los resultados finales
         correctas = sum(self.respuestas_usuario.values())
         total = len(self.respuestas_usuario)
         messagebox.showinfo("Resultados", f"Has respondido correctamente {correctas} de {total} preguntas.")
         self.root.quit()
 
-# Configuración inicial
-if __name__ == "__main__":
-    root = tk.Tk()
-    preguntas = obtener_preguntas()
-    app = TestApp(root, preguntas, num_preguntas=5)  # Puedes cambiar el número de preguntas aquí
-    root.mainloop()
-
+# Crear la ventana principal de la aplicación
+root = tk.Tk()
+root.title("Test de Dibujo Técnico")
+app = TestApp(root)
+root.mainloop()
 
